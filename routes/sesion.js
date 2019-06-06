@@ -7,26 +7,67 @@ var mdAutenticacion = require('../middlewares/autenticacion');
 // Inicializar variables
 var app = express();
 
+//===============================
 //Obtener todos las sesiones
+//===============================
 app.get('/', (req, res, next) => {
 
-    Sesion.find((err, sesiones) => {
+    var desde = req.query.desde || 0;
+    desde = Number(desde);
 
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                mensaje: 'Error cargando planes de la BD',
-                errors: err
+    Sesion.find().exec(
+        (err, sesiones) => {
+
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando planes de la BD',
+                    errors: err
+                });
+            }
+
+            Sesion.count({}, (err, conteo) => {
+                res.status(200).json({
+                    ok: true,
+                    sesiones: sesiones,
+                    total: conteo
+                });
             });
-        }
 
-        res.status(200).json({
-            ok: true,
-            sesiones: sesiones,
+        }).skip(desde).limit(5);
 
-        });
+});
 
-    });
+//===============================
+// Obtener sesiones por Plan
+//===============================
+app.get('/:plan', (req, res, next) => {
+
+    var desde = req.query.desde || 0;
+    desde = Number(desde);
+
+    var idPlan = req.params.plan;
+
+    Sesion.find({ plan: idPlan }).exec(
+        (err, sesiones) => {
+
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: 'Error cargando planes de la BD',
+                    errors: err
+                });
+            }
+
+            Sesion.count({}, (err, conteo) => {
+                res.status(200).json({
+                    ok: true,
+                    sesiones: sesiones,
+                    total: conteo
+                });
+            });
+
+        }).skip(desde).limit(5);
 
 });
 
